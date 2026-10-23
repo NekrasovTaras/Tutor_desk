@@ -23,7 +23,7 @@ def create_app(database_url=None):
         yield
         engine.dispose()
 
-    app = FastAPI(title="TutorDesk API", version="0.1.0", lifespan=lifespan,
+    app = FastAPI(title="TutorDesk API", version="0.2.0", lifespan=lifespan,
                   description="Ученики, занятия и домашние задания. Войдите через интерфейс, затем используйте API с cookie и X-CSRF-Token.")
     app.state.engine = engine
     app.state.sessions = session_factory(engine)

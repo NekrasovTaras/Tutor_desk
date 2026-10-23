@@ -70,12 +70,15 @@ class LessonWrite(Payload):
     notes: str = Field(default="", max_length=5000)
 
 
-class HomeworkWrite(Payload):
-    student_id: int = Field(gt=0)
-    lesson_id: int | None = Field(default=None, gt=0)
+class HomeworkEdit(Payload):
     title: str = Field(min_length=1, max_length=200)
     description: str = Field(min_length=1, max_length=10000)
     due_at: AwareDatetime
+
+
+class HomeworkWrite(HomeworkEdit):
+    student_id: int = Field(gt=0)
+    lesson_id: int | None = Field(default=None, gt=0)
 
 
 class Submission(Payload):

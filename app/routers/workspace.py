@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Homework, Lesson, Student, User
-from app.schemas import HomeworkWrite, LessonWrite, Review, StudentCreate, StudentEdit, Submission, as_utc
+from app.schemas import HomeworkEdit, HomeworkWrite, LessonWrite, Review, StudentCreate, StudentEdit, Submission, as_utc
 from app.security import current_user, hash_password, teacher_only
 from app.services import homework_json, lesson_json, owned_record, owned_student, save_lesson, scoped_query, student_json
 
@@ -73,6 +73,16 @@ def create_homework(data: HomeworkWrite, teacher: User = Depends(teacher_only), 
             raise HTTPException(400, "Занятие принадлежит другому ученику")
     hw = Homework(teacher_id=teacher.id, **data.model_dump(exclude={"due_at"}), due_at=as_utc(data.due_at))
     db.add(hw)
+    db.commit()
+    return homework_json(db, hw)
+
+
+@router.put("/homework/{homework_id}")
+def edit_homework(homework_id: int, data: HomeworkEdit, teacher: User = Depends(teacher_only), db: Session = Depends(get_db)):
+    hw = owned_record(db, Homework, teacher, homework_id)
+    if hw.status != "assigned":
+        raise HTTPException(409, "Ученик уже отправил ответ. Условие и срок задания менять нельзя.")
+    hw.title, hw.description, hw.due_at = data.title, data.description, as_utc(data.due_at)
     db.commit()
     return homework_json(db, hw)
 
