@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: tutordesk
+      POSTGRES_USER: tutordesk
+      POSTGRES_PASSWORD: local_dev_password
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tutordesk -d tutordesk"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  app:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://tutordesk:local_dev_password@db:5432/tutordesk
+      COOKIE_SECURE: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  postgres_data:
